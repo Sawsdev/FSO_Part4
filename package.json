@@ -1,0 +1,26 @@
+{
+  "name": "blog",
+  "version": "0.0.1",
+  "description": "Full stack open part 4 project",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js" 
+  },
+  "keywords": [
+    "nodejs",
+    "fullstack",
+    "testing"
+  ],
+  "author": "Sawsdev",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.3",
+    "mongoose": "^8.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
