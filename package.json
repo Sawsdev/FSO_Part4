@@ -4,9 +4,9 @@
   "description": "Full stack open part 4 project",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "node --test",
-    "dev": "nodemon index.js"
+    "start": "NODE_ENV=production index.js",
+    "test": "NODE_ENV=test node --test",
+    "dev": "NODE_ENV=development nodemon index.js"
   },
   "keywords": [
     "nodejs",
@@ -23,6 +23,7 @@
     "mongoose": "^8.2.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "nodemon": "^3.1.0",
+    "supertest": "^6.3.4"
   }
 }
