@@ -16,6 +16,11 @@ blogsRouter.get('/', async (request, response) => {
   blogsRouter.post('/', async (request, response) => {
     const newBlog = new Blog(request.body)
   try {
+    if(!newBlog.likes)
+    { 
+      newBlog.likes = 0
+    }
+
     const createdBlog = await newBlog.save()
     response.status(201).json(createdBlog)
     

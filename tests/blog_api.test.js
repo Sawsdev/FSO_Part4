@@ -82,7 +82,7 @@ test('every blog post in the list must have the correct keys', async () => {
     })
 });
 
-test('should add new blog post correctly',{only: true}, async () => {
+test('should add new blog post correctly', async () => {
     const newBlog = {
         title: "Atomic habits",
         author: "James Clear",
@@ -96,6 +96,20 @@ test('should add new blog post correctly',{only: true}, async () => {
     const createdBlog = response.body
     assert.strictEqual(blogs.length + 1, allBlogs.length)
     assert.strictEqual(newBlog.title, createdBlog.title)
+});
+
+test('should add new blog post correctly having 0 likes if likes property is missing',{only: true}, async () => {
+  const newBlog = {
+    title: "Atomic habits",
+    author: "James Clear",
+    url: "https://jamesclear.com/atomic-habits",
+  }
+  const response = await api
+                         .post('/api/blogs')
+                         .send(newBlog)
+                         .expect(201)
+  const createdBlog = response.body
+  assert.strictEqual(0, createdBlog.likes)
 });
 
 
