@@ -7,6 +7,67 @@ const Blog = require('../models/blog')
 
 const api = supertest(app)
 
+const blogs = [
+    {
+        _id: "5a422a851b54a676234d17f7",
+        title: "React patterns",
+        author: "Michael Chan",
+        url: "https://reactpatterns.com/",
+        /*likes: 7,*/
+        __v: 0
+      },
+      {
+        _id: "5a422aa71b54a676234d17f8",
+        title: "Go To Statement Considered Harmful",
+        author: "Edsger W. Dijkstra",
+        url: "http://www.u.arizona.edu/~rubinson/copyright_violations/Go_To_Considered_Harmful.html",
+        /*likes: 5,*/
+        __v: 0
+      },
+      {
+        _id: "5a422b3a1b54a676234d17f9",
+        title: "Canonical string reduction",
+        author: "Edsger W. Dijkstra",
+        url: "http://www.cs.utexas.edu/~EWD/transcriptions/EWD08xx/EWD808.html",
+        /*likes: 12,*/
+        __v: 0
+      },
+      {
+        _id: "5a422b891b54a676234d17fa",
+        title: "First class tests",
+        author: "Robert C. Martin",
+        url: "http://blog.cleancoder.com/uncle-bob/2017/05/05/TestDefinitions.htmll",
+        /*likes: 10,*/
+        __v: 0
+      },
+      {
+        _id: "5a422ba71b54a676234d17fb",
+        title: "TDD harms architecture",
+        author: "Robert C. Martin",
+        url: "http://blog.cleancoder.com/uncle-bob/2017/03/03/TDD-Harms-Architecture.html",
+        /*likes: 0,*/
+        __v: 0
+      },
+      {
+        _id: "5a422bc61b54a676234d17fc",
+        title: "Type wars",
+        author: "Robert C. Martin",
+        url: "http://blog.cleancoder.com/uncle-bob/2016/05/01/TypeWars.html",
+        /*likes: 2,*/
+        __v: 0
+      }  
+]
+
+beforeEach(async () => {
+    await Blog.deleteMany({})
+
+    for (const blog of blogs) {
+        let newBlog = new Blog(blog)
+        await newBlog.save()
+        
+    }
+})
+
 test('should list every blog post in database in JSON format', async () => {
    await api
         .get('/api/blogs')
@@ -14,17 +75,27 @@ test('should list every blog post in database in JSON format', async () => {
         .expect('Content-Type',/application\/json/)
 });
 
-test('every blog post in the list must have the correct keys', {only: true}, async () => {
+test('every blog post in the list must have the correct keys', async () => {
     const response = await api.get('/api/blogs')
-    const blogKeys = {
-        id: "5a422a851b54a676234d17f7",
-        title: "React patterns",
-        author: "Michael Chan",
-        url: "https://reactpatterns.com/"
-    } 
     response.body.map((blog) => {
-        assert.strictEqual(JSON.stringify(Object.keys(blogKeys).sort()), JSON.stringify(Object.keys(blog).sort()))
+        assert.strictEqual(JSON.stringify(Object.keys(blogs[0]).sort()), JSON.stringify(Object.keys(blog).sort()))
     })
+});
+
+test('should add new blog post correctly',{only: true}, async () => {
+    const newBlog = {
+        title: "Atomic habits",
+        author: "James Clear",
+        url: "https://jamesclear.com/atomic-habits",
+    }
+    const response = await api
+                             .post('/api/blogs')
+                             .send(newBlog)
+                             .expect(201)
+    const {body:allBlogs} = await api.get('/api/blogs')
+    const createdBlog = response.body
+    assert.strictEqual(blogs.length + 1, allBlogs.length)
+    assert.strictEqual(newBlog.title, createdBlog.title)
 });
 
 
