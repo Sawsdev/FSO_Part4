@@ -121,14 +121,73 @@ describe('When there is some blog posts in the db', () => {
 
     test('should fail with statuscode 400 if a wrong id is given', async () => {
       
-      const wrongBlogId = await helper.nonExistingBlogId()
-      await api
+     await api
       .delete(`/api/blogs/abc123`)
       .expect(400)
       const dbBlogs = await helper.blogsInDb()
       assert.strictEqual(dbBlogs.length, helper.initialBlogs.length)
 
     });
+
+  });
+
+  describe('update of a blog post', () => {
+    beforeEach(async () => {
+      await Blog.deleteMany({})
+  
+      for (const blog of helper.initialBlogs) {
+          let newBlog = new Blog(blog)
+          await newBlog.save()
+          
+      }
+    })
+
+    test('should successfully update returning updated blog post with statuscode 200', async () => {
+
+        const blogToEdit = {
+          title: helper.initialBlogs[3].title,
+          author: "Roberto Carlo Martin",
+          url: helper.initialBlogs[3].url,
+          likes: 14,
+        }
+        
+        const response = await api
+          .put(`/api/blogs/${helper.initialBlogs[3]._id}`)
+          .send(blogToEdit)
+          .expect(200)
+         assert.strictEqual(response.body.title, helper.initialBlogs[3].title)
+         assert.strictEqual(response.body.author, blogToEdit.author) 
+        
+        
+    });
+
+    test('should fail returning statuscode 400 if title is missing', async () => {
+      const blogToEdit = {
+        author: "Roberto Carlo Martin",
+        url: helper.initialBlogs[3].url,
+        likes: 14,
+      }
+      
+      await api
+        .put(`/api/blogs/${helper.initialBlogs[3]._id}`)
+        .send(blogToEdit)
+        .expect(400)
+    });
+
+    test('should fail returning statuscode 400 if author is missing', async () => {
+      const blogToEdit = {
+        title: helper.initialBlogs[3].title,
+        url: helper.initialBlogs[3].url,
+        likes: 14,
+      }
+      
+      await api
+        .put(`/api/blogs/${helper.initialBlogs[3]._id}`)
+        .send(blogToEdit)
+        .expect(400)
+    });
+
+
 
   });
 

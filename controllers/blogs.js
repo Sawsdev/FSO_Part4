@@ -35,12 +35,46 @@ blogsRouter.get('/', async (request, response) => {
   })
 
   blogsRouter.delete('/:id', async (request, response) => {
+    const id = request.params.id
+      if (!id || id === "") {
+        response.status(400).json({ error: "Missing id"})
+      }
     try {
       await Blog.findByIdAndDelete(request.params.id)
       response.status(204).end()
       
     } catch (error) {
       response.status(400).json({error: error.message})
+    }
+  })
+
+  blogsRouter.put('/:id', async (request, response) => {
+    const id = request.params.id
+    if (!id || id === "") {
+      response.status(400).json({ error: "Missing id"})
+    }
+    try {
+        const {
+          author, 
+          title,
+          url,
+          likes
+        } = request.body
+        if( !title)
+        {
+          response.status(400).json({error: "Missing title"})
+        }
+        if( !author)
+        {
+          response.status(400).json({error: "Missing title"})
+        }
+        
+        const editedBlog = await Blog.findByIdAndUpdate(id,{
+          author, title, url, likes
+        }, {new: true})
+        response.status(200).json(editedBlog)
+    } catch (error) {
+      
     }
   })
 
