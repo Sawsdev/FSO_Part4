@@ -4,14 +4,18 @@ const User = require('../models/user')
 
 usersRouter.get('/', async (request, response) => {
     const users = await User.find({})
-    response.json(users)
+    return response.json(users)
 })
 
 usersRouter.post('/', async (request, response) => {
     const { name, username, password } = request.body
-    if (!name || !username || !password) {
+    if ( !username || !password) {
         
-        response.status(422).json({error: "Missing information, all fields are required"})    
+       return response.status(422).json({error: "Missing information, all fields are required"}).end()    
+    }
+
+    if (password.length < 3) {
+        return response.status(400).json({error: "Password lenght must be at leas 3 characters long."})
     }
 
     const saltRounds = 10
@@ -21,7 +25,7 @@ usersRouter.post('/', async (request, response) => {
         name, username, passwordHash
     })
     const savedUser = await newUser.save()
-    response.status(201).json(savedUser)
+    return response.status(201).json(savedUser)
 })
 
 
