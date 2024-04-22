@@ -20,9 +20,9 @@ blogsRouter.get('/', async (request, response) => {
     {
       return response.status(400).json({error: "Title and url are required"})
     }
-    if ( !newBlog.user ) {
-      return response.status(422).json({error: "User is required"})
-    }
+    // if ( !newBlog.user ) {
+    //   return response.status(422).json({error: "User is required"})
+    // }
 
     if(!newBlog.likes)
     { 

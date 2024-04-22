@@ -12,8 +12,9 @@ const api = supertest(app)
 describe('When there is some blog posts in the db', () => {
   beforeEach(async () => {
       await Blog.deleteMany({})
-  
+      const users = await helper.usersInDb()
       for (const blog of helper.initialBlogs) {
+          blog.user = users[0].id
           let newBlog = new Blog(blog)
           await newBlog.save()
           
@@ -37,21 +38,44 @@ describe('When there is some blog posts in the db', () => {
   describe('Addition of a new blog post', () => {
     beforeEach(async () => {
       await Blog.deleteMany({})
-  
+      const users = await helper.usersInDb()
+      
       for (const blog of helper.initialBlogs) {
+          blog.user = users[0].id
           let newBlog = new Blog(blog)
           await newBlog.save()
           
       }
   })
+    test('should fail returning statuscode 401 if token is missing', async () => {
+      const newBlog = {
+        title: "Atomic habits",
+        author: "James Clear",
+        url: "https://jamesclear.com/atomic-habits",
+    }
+      await api
+        .post('/api/blogs')
+        .send(newBlog)
+        .expect(401)
+        const allBlogs = await helper.blogsInDb()
+        assert.strictEqual(helper.initialBlogs.length, allBlogs.length)
+    });
     test('should succeed returning statuscode 201', async () => {
         const newBlog = {
             title: "Atomic habits",
             author: "James Clear",
             url: "https://jamesclear.com/atomic-habits",
         }
+
+        const agent  = await api
+                              .post('/api/login')
+                              .send({
+                                username: 'root',
+                                password: "stewiewashere.32"
+                              })
         const response = await api
                                  .post('/api/blogs')
+                                 .set({Authorization: `Bearer ${agent.body.token}`})
                                  .send(newBlog)
                                  .expect(201)
         const allBlogs = await helper.blogsInDb()
@@ -66,8 +90,17 @@ describe('When there is some blog posts in the db', () => {
         author: "James Clear",
         url: "https://jamesclear.com/atomic-habits",
       }
+
+      const agent  = await api
+      .post('/api/login')
+      .send({
+        username: 'root',
+        password: "stewiewashere.32"
+      })
+
       const response = await api
                              .post('/api/blogs')
+                             .set({Authorization: `Bearer ${agent.body.token}`})
                              .send(newBlog)
                              .expect(201)
       const createdBlog = response.body
@@ -82,9 +115,18 @@ describe('When there is some blog posts in the db', () => {
         author: "James Clear",
         
       }
+
+      const agent  = await api
+      .post('/api/login')
+      .send({
+        username: 'root',
+        password: "stewiewashere.32"
+      })
+
     
          await api
         .post('/api/blogs')
+        .set({Authorization: `Bearer ${agent.body.token}`})
         .send(newBlog)
         .expect(400)
         const allBlogs = await helper.blogsInDb()
@@ -97,19 +139,44 @@ describe('When there is some blog posts in the db', () => {
   describe('deletion of a blog post', () => {
     beforeEach(async () => {
       await Blog.deleteMany({})
-  
+      const users = await helper.usersInDb()
       for (const blog of helper.initialBlogs) {
+          blog.user = users[0].id
           let newBlog = new Blog(blog)
           await newBlog.save()
           
       }
   })
+
+    test('should fail with statuscode 401 if token is missing', async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(401)
+      const dbBlogs = await helper.blogsInDb()
+      assert.strictEqual(dbBlogs.length, helper.initialBlogs.length)
+
+    });
     
     test('should succeed with statuscode 204', async () => {
       const blogsAtStart = await helper.blogsInDb()
       const blogToDelete = blogsAtStart[0]
+
+      const agent  = await api
+      .post('/api/login')
+      .send({
+        username: 'root',
+        password: "stewiewashere.32"
+      })
+
+      console.log(blogToDelete);
+
+
       await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set({Authorization: `Bearer ${agent.body.token}`})
       .expect(204)
 
       const blogsAtEnd = await helper.blogsInDb()
@@ -121,8 +188,17 @@ describe('When there is some blog posts in the db', () => {
 
     test('should fail with statuscode 400 if a wrong id is given', async () => {
       
+      const agent  = await api
+      .post('/api/login')
+      .send({
+        username: 'root',
+        password: "stewiewashere.32"
+      })
+
+
      await api
       .delete(`/api/blogs/abc123`)
+      .set({Authorization: `Bearer ${agent.body.token}`})
       .expect(400)
       const dbBlogs = await helper.blogsInDb()
       assert.strictEqual(dbBlogs.length, helper.initialBlogs.length)
