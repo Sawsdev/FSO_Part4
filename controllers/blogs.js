@@ -14,14 +14,11 @@ const getTokenFrom = request => {
 }
 
 blogsRouter.get('/', async (request, response) => {
-  try {
+  
     const blogs = await Blog.find({}).populate('user', {username: 1, name: 1, id: 1})
     response.json(blogs)
     
-  } catch (error) {
-    response.status(400).end()
-    console.log(error);
-  }
+
   })
   
   blogsRouter.post('/', async (request, response) => {
@@ -40,7 +37,7 @@ blogsRouter.get('/', async (request, response) => {
     if ( !newBlog.user ) {
       return response.status(422).json({error: "User is required"})
     }
-  try {
+
     if(!newBlog.likes)
     { 
       newBlog.likes = 0
@@ -51,11 +48,7 @@ blogsRouter.get('/', async (request, response) => {
     user.blogs = user.blogs.concat(createdBlog._id)
     user.save()
     response.status(201).json(createdBlog)
-    
-  } catch (error) {
-    response.status(400).end()
-    console.log(error);
-  }
+
   })
 
   blogsRouter.delete('/:id', async (request, response) => {
@@ -63,13 +56,11 @@ blogsRouter.get('/', async (request, response) => {
       if (!id || id === "") {
         response.status(400).json({ error: "Missing id"})
       }
-    try {
+
       await Blog.findByIdAndDelete(request.params.id)
       response.status(204).end()
       
-    } catch (error) {
-      response.status(400).json({error: error.message})
-    }
+
   })
 
   blogsRouter.put('/:id', async (request, response) => {
@@ -77,7 +68,7 @@ blogsRouter.get('/', async (request, response) => {
     if (!id || id === "") {
       response.status(400).json({ error: "Missing id"})
     }
-    try {
+
         const {
           author, 
           title,
@@ -97,9 +88,7 @@ blogsRouter.get('/', async (request, response) => {
           author, title, url, likes
         }, {new: true})
         response.status(200).json(editedBlog)
-    } catch (error) {
-      
-    }
+
   })
 
   module.exports = blogsRouter
