@@ -1,17 +1,8 @@
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const blogsRouter = require('express').Router()
-const jwt = require('jsonwebtoken')
+const { userExtractor } = require('../utils/middleware')
 
-const getTokenFrom = request => {
-  const authorization = request.get('authorization')
-  if(authorization && authorization.startsWith('Bearer '))
-  {
-      return authorization.replace('Bearer ', '')
-  }
-
-  return null
-}
 
 blogsRouter.get('/', async (request, response) => {
   
@@ -21,14 +12,9 @@ blogsRouter.get('/', async (request, response) => {
 
   })
   
-  blogsRouter.post('/', async (request, response) => {
+  blogsRouter.post('/', userExtractor, async (request, response) => {
     
-    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
-
-    if (!decodedToken) {
-      return response.status(401).json({ error: "Invalid token" })
-    }
-
+    const {userId} = request  
     const newBlog = new Blog(request.body)
     if (!newBlog.title || !newBlog.url)
     {
@@ -42,7 +28,7 @@ blogsRouter.get('/', async (request, response) => {
     { 
       newBlog.likes = 0
     }
-    const user = await User.findById(newBlog.user)
+    const user = await User.findById(userId)
     newBlog.user = user.id
     const createdBlog = await newBlog.save()
     user.blogs = user.blogs.concat(createdBlog._id)
@@ -51,15 +37,9 @@ blogsRouter.get('/', async (request, response) => {
 
   })
 
-  blogsRouter.delete('/:id', async (request, response) => {
+  blogsRouter.delete('/:id', userExtractor, async (request, response) => {
 
-    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
-
-    if (!decodedToken) {
-      return response.status(401).json({ error: "Invalid token" })
-    }
-    const { id:user } = decodedToken
-
+    const {userId} = request
     const id = request.params.id
     if (!id || id === "") {
       response.status(400).json({ error: "Missing id"})
@@ -67,7 +47,7 @@ blogsRouter.get('/', async (request, response) => {
     
     const blog = await Blog.findById(id)
 
-    if (blog.user.toString() !== user.toString()) {
+    if (blog.user.toString() !== userId.toString()) {
       return response.status(401).json({error: "Invalid token"})
     }
 
